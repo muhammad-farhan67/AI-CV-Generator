@@ -103,7 +103,7 @@ def handle_cv_cover_letter_generation():
 def handle_interview_question_generation():
     """Handles the interview question generation process."""
     with st.form(key='interview_form'):
-        job_description = st.text_area("Job Description for Interview", help="Describe the job you are applying for to generate interview questions.")
+        job_description = st.text_area("Job Description", help="Describe the job you are applying for to generate interview questions.")
         cv_content = st.text_area("Your CV", help="Paste your current CV here.")
         submit_interview_button = st.form_submit_button("Generate Interview Questions")
 
