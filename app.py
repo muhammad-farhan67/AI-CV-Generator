@@ -146,7 +146,7 @@ def generate_cover_letter(job_description, cv_content):
                 {"role": "system", "content": "You are an expert in resume writing and job applications."},
                 {"role": "user", "content": prompt}
             ],
-            model="llama-3.1-70b-versatile",
+            model="llama-3.1-405b-reasoning",
             temperature=0.5,
             max_tokens=1000
         )
