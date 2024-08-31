@@ -146,7 +146,7 @@ def generate_cover_letter(job_description, cv_content):
                 {"role": "system", "content": "You are an expert in resume writing and job applications."},
                 {"role": "user", "content": prompt}
             ],
-            model="llama3-8b-8192",
+            model="llama3-8b-8192",#you can use the model which suits you the most 
             temperature=0.5,
             max_tokens=1000
         )
@@ -184,7 +184,7 @@ def generate_interview_questions(job_description, cv_content):
                 {"role": "system", "content": "You are an expert in conducting job interviews."},
                 {"role": "user", "content": prompt}
             ],
-            model="llama-3.1-70b-versatile",
+            model="llama-3.1-70b-versatile",  #you can use the model which suits you the most 
             temperature=0.7,
             max_tokens=500
         )
