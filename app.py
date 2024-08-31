@@ -52,13 +52,13 @@ def main():
         """, unsafe_allow_html=True)
 
     # Sidebar navigation
-    page = st.sidebar.selectbox("Navigate", ["Home", "CV/Cover Letter Generation", "Interview Question Generation"])
+    page = st.sidebar.selectbox("Navigate", ["Home", "Cover Letter Generation", "Interview Questions Generation"])
 
     if page == "Home":
         display_home_page()
-    elif page == "CV/Cover Letter Generation":
+    elif page == "Cover Letter Generation":
         handle_cv_cover_letter_generation()
-    elif page == "Interview Question Generation":
+    elif page == "Interview Questions Generation":
         handle_interview_question_generation()
 
 def display_home_page():
