@@ -1,166 +1,111 @@
-import os
-from dotenv import load_dotenv
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
-from flask_cors import CORS
-import re
-import logging
-from functools import lru_cache
+import streamlit as st
 
-load_dotenv()
+def main():
+    st.title('Personalized CV Generator')
 
-app = Flask(__name__)
-CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///users.db')
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key')
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
-jwt = JWTManager(app)
+    # Enhanced Styling for visibility and aesthetics
+    st.markdown("""
+        <style>
+        body {
+            color: #4a4a4a;
+            background-color: #f0f2f6;
+        }
+        .stButton>button {
+            color: #ffffff;
+            background-color: #4a90e2;
+        }
+        h1 {
+            color: #00BFFF;  /* Sky blue color */
+            font-size: 36px;
+            text-align: center;
+        }
+        h2 {
+            color: #00BFFF;  /* Sky blue color */
+            font-size: 30px;
+            text-align: center;
+        }
+        .reportview-container .markdown-text-container {
+            font-family: sans-serif;
+            color: #4a4a4a;
+            font-size: 18px;
+            text-align: center;
+        }
+        .card {
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #ffffff;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+            margin: 10px;
+            text-align: center;
+            color: #333; /* Dark color for text in card */
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
-logging.basicConfig(level=logging.INFO)
+    # Sidebar navigation
+    page = st.sidebar.selectbox("Navigate", ["Home", "CV/Cover Letter Generation", "Interview Question Generation"])
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(120), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    user_data = db.Column(db.Text, nullable=True)
+    if page == "Home":
+        st.header("Welcome to the Personalized CV Generator")
+        st.markdown("""
+        <div class="card">
+            <h2>Personalized CVs</h2>
+            <p>This application assists job seekers by generating personalized CVs tailored to specific job descriptions and company profiles.</p>
+        </div>
+        <div class="card">
+            <h2>Cover Letter Assistance</h2>
+            <p>Generate cover letters that complement your CVs, enhancing your job application and increasing your chances of landing interviews.</p>
+        </div>
+        <div class="card">
+            <h2>Interview Preparation</h2>
+            <p>Prepare for interviews with custom questions based on the job description you are applying for, helping you to better anticipate and prepare for potential questions.</p>
+        </div>
+        <div class="card">
+            <h2>AI-Driven Insights</h2>
+            <p>Leverage advanced AI techniques, including the Retrieval-Augmented Generation (RAG), to ensure your applications are optimized and relevant.</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-def validate_input(data):
-    if not data.get('username') or not data.get('password'):
-        return False, "Username and password are required"
-    if len(data['password']) < 8:
-        return False, "Password must be at least 8 characters long"
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", data.get('email', '')):
-        return False, "Invalid email format"
-    return True, ""
+    elif page == "CV/Cover Letter Generation":
+        with st.form(key='cv_form'):
+            job_description = st.text_area("Job Description", help="Describe the job you are applying for.")
+            skills = st.text_input("Skills", help="List your relevant skills separated by commas.")
+            education = st.text_input("Education", help="Describe your highest level of education.")
+            submit_button = st.form_submit_button("Generate CV/Cover Letter")
 
-@app.errorhandler(Exception)
-def handle_exception(e):
-    logging.error(f"Unhandled exception: {str(e)}")
-    return jsonify({"error": "An unexpected error occurred"}), 500
+        if submit_button:
+            user_data = {
+                "job_description": job_description,
+                "skills": skills.split(','),
+                "education": education
+            }
+            generated_cv = rag_technique_cv_generation(user_data)
+            st.markdown(f"<div class='card'>{generated_cv}</div>", unsafe_allow_html=True)
 
-@app.route('/register', methods=['POST'])
-def register():
-    try:
-        data = request.json
-        is_valid, message = validate_input(data)
-        if not is_valid:
-            return jsonify({"error": message}), 400
-        
-        hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
-        new_user = User(username=data['username'], password=hashed_password, email=data['email'])
-        db.session.add(new_user)
-        db.session.commit()
-        logging.info(f"New user registered: {data['username']}")
-        return jsonify({"message": "User created successfully"}), 201
-    except Exception as e:
-        logging.error(f"Error in user registration: {str(e)}")
-        return jsonify({"error": "Registration failed"}), 500
+    elif page == "Interview Question Generation":
+        with st.form(key='interview_form'):
+            job_description = st.text_area("Job Description for Interview", help="Describe the job you are applying for to generate interview questions.")
+            submit_interview_button = st.form_submit_button("Generate Interview Questions")
 
-@app.route('/login', methods=['POST'])
-def login():
-    try:
-        data = request.json
-        user = User.query.filter_by(username=data['username']).first()
-        if user and bcrypt.check_password_hash(user.password, data['password']):
-            access_token = create_access_token(identity=user.username)
-            logging.info(f"User logged in: {data['username']}")
-            return jsonify({"access_token": access_token}), 200
-        logging.warning(f"Failed login attempt for user: {data['username']}")
-        return jsonify({"error": "Invalid username or password"}), 401
-    except Exception as e:
-        logging.error(f"Error in user login: {str(e)}")
-        return jsonify({"error": "Login failed"}), 500
+        if submit_interview_button:
+            interview_questions = generate_interview_questions(job_description)
+            st.markdown(f"<div class='card'>{interview_questions}</div>", unsafe_allow_html=True)
 
-@app.route('/update_profile', methods=['PUT'])
-@jwt_required()
-def update_profile():
-    try:
-        data = request.json
-        user = User.query.filter_by(username=get_jwt_identity()).first()
-        if not user:
-            return jsonify({"error": "User not found"}), 404
-        
-        if 'email' in data:
-            user.email = data['email']
-        if 'user_data' in data:
-            user.user_data = data['user_data']
-        
-        db.session.commit()
-        logging.info(f"Profile updated for user: {user.username}")
-        return jsonify({"message": "Profile updated successfully"}), 200
-    except Exception as e:
-        logging.error(f"Error in profile update: {str(e)}")
-        return jsonify({"error": "Profile update failed"}), 500
+def rag_technique_cv_generation(user_data):
+    job_desc = user_data['job_description']
+    skills = ', '.join(user_data['skills'])
+    education = user_data['education']
+    cv_content = f"""
+    **Job Description:** {job_desc}
+    **Skills:** {skills}
+    **Education:** {education}
+    **Experience:** Generated based on job description and skills using RAG.
+    """
+    return cv_content
 
-@lru_cache(maxsize=100)
-def get_job_match(job_description, user_data):
-    # Simplified job matching logic
-    common_words = set(job_description.lower().split()) & set(user_data.lower().split())
-    match_score = len(common_words) / (len(set(job_description.split())) + len(set(user_data.split())))
-    return match_score
+def generate_interview_questions(job_description):
+    questions = f"**Sample Interview Questions for:** {job_description}\n1. How do your skills match this job?\n2. What experiences make you a good candidate?"
+    return questions
 
-@app.route('/generate_cv', methods=['POST'])
-@jwt_required()
-def generate_cv():
-    try:
-        data = request.json
-        job_description = data['job_description']
-        user = User.query.filter_by(username=get_jwt_identity()).first()
-        user_data = user.user_data if user else ""
-        
-        match_score = get_job_match(job_description, user_data)
-        
-        cv = f"Generated CV based on:\nJob Description: {job_description}\nUser Data: {user_data}\nMatch Score: {match_score:.2f}"
-        
-        logging.info(f"CV generated for user: {user.username}")
-        return jsonify({"cv": cv, "match_score": match_score})
-    except Exception as e:
-        logging.error(f"Error in CV generation: {str(e)}")
-        return jsonify({"error": "CV generation failed"}), 500
-
-@app.route('/generate_cover_letter', methods=['POST'])
-@jwt_required()
-def generate_cover_letter():
-    try:
-        data = request.json
-        job_description = data['job_description']
-        user = User.query.filter_by(username=get_jwt_identity()).first()
-        user_data = user.user_data if user else ""
-        
-        match_score = get_job_match(job_description, user_data)
-        
-        cover_letter = f"Generated Cover Letter based on:\nJob Description: {job_description}\nUser Data: {user_data}\nMatch Score: {match_score:.2f}"
-        
-        logging.info(f"Cover letter generated for user: {user.username}")
-        return jsonify({"cover_letter": cover_letter, "match_score": match_score})
-    except Exception as e:
-        logging.error(f"Error in cover letter generation: {str(e)}")
-        return jsonify({"error": "Cover letter generation failed"}), 500
-
-@app.route('/prepare_interview', methods=['POST'])
-@jwt_required()
-def prepare_interview():
-    try:
-        data = request.json
-        job_description = data['job_description']
-        user = User.query.filter_by(username=get_jwt_identity()).first()
-        user_data = user.user_data if user else ""
-        
-        match_score = get_job_match(job_description, user_data)
-        
-        interview_questions = f"Generated Interview Questions based on:\nJob Description: {job_description}\nUser Data: {user_data}\nMatch Score: {match_score:.2f}"
-        
-        logging.info(f"Interview questions generated for user: {user.username}")
-        return jsonify({"interview_questions": interview_questions, "match_score": match_score})
-    except Exception as e:
-        logging.error(f"Error in interview preparation: {str(e)}")
-        return jsonify({"error": "Interview preparation failed"}), 500
-
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
+if __name__ == "__main__":
+    main()
