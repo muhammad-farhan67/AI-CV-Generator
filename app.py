@@ -171,7 +171,7 @@ def main():
 def display_logo():
     """Displays the JobMate AI logo."""
     
-    logo_path = 'pic.png'
+    logo_path = 'assets/pic.png'
     
     # Read the image file and encode it to base64
     with open(logo_path, "rb") as image_file:
