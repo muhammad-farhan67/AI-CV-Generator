@@ -20,7 +20,7 @@ except Exception as e:
 def main():
     st.set_page_config(
         page_title="JobMate AI",
-        page_icon="assets/pic.png",  
+        page_icon="pic.png",  
         layout="wide"
     )
 
@@ -156,7 +156,7 @@ def main():
     display_logo()
 
     # Sidebar navigation with styled radio buttons
-    st.sidebar.markdown("<h1>Navigate<h1>", unsafe_allow_html=True)
+    st.sidebar.markdown("<h1>Navigate</h1>", unsafe_allow_html=True)
     page = st.sidebar.radio("", ["Welcome To JOBMATE AI", "Personalized Cover Letter", "Generate Interview Questions", "Answers To Custom Questions"], key="navigation")
 
     if page == "Welcome To JOBMATE AI":
@@ -171,7 +171,7 @@ def main():
 def display_logo():
     """Displays the JobMate AI logo."""
     
-    logo_path = 'assets/pic.png'
+    logo_path = 'pic.png'
     
     # Read the image file and encode it to base64
     with open(logo_path, "rb") as image_file:
@@ -239,14 +239,13 @@ def handle_cv_cover_letter_generation():
                 st.markdown(f"<div class='card'><h3>Generated Cover Letter:</h3><p>{cover_letter}</p></div>", unsafe_allow_html=True)
                 
                 # Download button for the cover letter
-                if st.button("Download as PDF"):
-                    pdf = create_pdf(cover_letter, "Cover Letter")
-                    st.download_button(
-                        label="Download as PDF",
-                        data=pdf,
-                        file_name="cover_letter.pdf",
-                        mime="application/pdf"
-                    )
+                pdf = create_pdf(cover_letter, "Cover Letter")
+                st.download_button(
+                    label="Download as PDF",
+                    data=pdf,
+                    file_name="cover_letter.pdf",
+                    mime="application/pdf"
+                )
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
 
@@ -266,17 +265,17 @@ def handle_interview_question_generation():
             try:
                 cv_content = read_file(cv_file)
                 interview_questions = generate_interview_questions(job_description, cv_content)
-                st.markdown(f"<div class='card'><h3>Generated Interview Questions:</h3><p>{interview_questions}</p></div>", unsafe_allow_html=True)
+                formatted_questions = format_interview_questions(interview_questions)
+                st.markdown(f"<div class='card'><h3>Generated Interview Questions:</h3><p>{formatted_questions}</p></div>", unsafe_allow_html=True)
                 
                 # Download button for the interview questions
-                if st.button("Download as PDF"):
-                    pdf = create_pdf(interview_questions, "Interview Questions")
-                    st.download_button(
-                        label="Download as PDF",
-                        data=pdf,
-                        file_name="interview_questions.pdf",
-                        mime="application/pdf"
-                    )
+                pdf = create_pdf(formatted_questions, "Interview Questions")
+                st.download_button(
+                    label="Download as PDF",
+                    data=pdf,
+                    file_name="interview_questions.pdf",
+                    mime="application/pdf"
+                )
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
 
@@ -401,6 +400,12 @@ def generate_interview_questions(job_description, cv_content):
         return response.choices[0].message.content
     except Exception as e:
         raise Exception(f"Error in generating interview questions: {str(e)}")
+
+def format_interview_questions(questions):
+    """Formats the interview questions with proper spacing and numbering."""
+    questions_list = questions.split('\n')
+    formatted_questions = "\n".join([f"{i+1}. {question.strip()}" for i, question in enumerate(questions_list) if question.strip()])
+    return formatted_questions
 
 def answer_custom_question(cv_content, job_description, custom_question):
     """Answers a custom question based on the CV, job description, and the question itself."""
