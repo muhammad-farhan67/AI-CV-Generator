@@ -20,7 +20,7 @@ except Exception as e:
 def main():
     st.set_page_config(
         page_title="JobMate AI",
-        page_icon="pic.png",  
+        page_icon="assets/pic.png",  
         layout="wide"
     )
 
