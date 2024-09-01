@@ -440,8 +440,7 @@ def answer_custom_question(cv_content, job_description, custom_question):
                 {"role": "system", "content": "You are an expert career advisor with deep knowledge of various industries and job roles."},
                 {"role": "user", "content": prompt}
             ],
-            model="llama3-8b-8192"
-",
+            model="llama3-8b-8192",
             temperature=0.7,
             max_tokens=500
         )
