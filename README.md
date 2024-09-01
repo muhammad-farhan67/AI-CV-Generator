@@ -10,7 +10,7 @@ Welcome to **JobMate AI**! This application leverages AI to assist with job appl
 
 ## 🧠 AI Tech Stack
 
-- **Groq API**: The app uses Groq’s advanced API to generate text via the Llama-based `mixtral-8x7b-32768` model.
+- **Groq API**: The app uses Groq’s advanced API to generate text via the Llama-based `llama3-8b-8192` model.
 - **RAG (Retrieval-Augmented Generation)**: This is a method used to enhance text generation by retrieving and utilizing relevant content for more accurate and context-aware outputs.
 - **Streamlit**: Used for building the frontend UI of the application.
 - **Document Processing**: Includes libraries like `PyPDF2` and `docx` to process and extract information from PDFs and DOCX files.
