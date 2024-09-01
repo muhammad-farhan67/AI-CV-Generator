@@ -12,12 +12,12 @@ import base64
 # Initialize Groq client
 try:
     client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+    
 except Exception as e:
     st.error(f"Failed to initialize Groq client: {str(e)}")
     st.stop()
 
 def main():
-
     st.set_page_config(
         page_title="JobMate AI",
         page_icon="pic.png",  
@@ -79,6 +79,9 @@ def main():
             margin-bottom: 10px;
             font-weight: 700;
         }
+        .card p {
+            color: #2C3E50;
+        }
         .stRadio > div {
             display: flex;
             flex-direction: column;
@@ -95,6 +98,7 @@ def main():
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 400;
+            color: #2C3E50;
         }
         .stRadio > div > label:hover, .stRadio > div > label[data-baseweb="radio"]:hover {
             background-color: #E8F6FF;
@@ -219,8 +223,6 @@ def handle_job_description_input():
 def handle_cv_cover_letter_generation():
     """Handles the CV/Cover Letter generation process."""
     st.markdown("<h1>Generate Personalized Cover Letter</h1>", unsafe_allow_html=True)
-    if 'cover_letter' not in st.session_state:
-        st.session_state.cover_letter = ""
 
     with st.form(key='cv_form'):
         job_description = handle_job_description_input()
@@ -233,14 +235,14 @@ def handle_cv_cover_letter_generation():
         else:
             try:
                 cv_content = read_file(cv_file)
-                st.session_state.cover_letter = generate_cover_letter(job_description, cv_content)
-                st.markdown(f"<div class='card'><h3>Generated Cover Letter:</h3>{st.session_state.cover_letter}</div>", unsafe_allow_html=True)
+                cover_letter = generate_cover_letter(job_description, cv_content)
+                st.markdown(f"<div class='card'><h3>Generated Cover Letter:</h3><p>{cover_letter}</p></div>", unsafe_allow_html=True)
                 
                 # Download button for the cover letter
-                if st.button("Download Cover Letter as PDF"):
-                    pdf = create_pdf(st.session_state.cover_letter, "Cover Letter")
+                if st.button("Download as PDF"):
+                    pdf = create_pdf(cover_letter, "Cover Letter")
                     st.download_button(
-                        label="Click here to download",
+                        label="Download as PDF",
                         data=pdf,
                         file_name="cover_letter.pdf",
                         mime="application/pdf"
@@ -248,15 +250,9 @@ def handle_cv_cover_letter_generation():
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
 
-    # Display previously generated cover letter
-    if st.session_state.cover_letter:
-        st.markdown(f"<div class='card'><h3>Previously Generated Cover Letter:</h3>{st.session_state.cover_letter}</div>", unsafe_allow_html=True)
-
 def handle_interview_question_generation():
     """Handles the interview question generation process."""
     st.markdown("<h1>Generate Interview Questions</h1>", unsafe_allow_html=True)
-    if 'interview_questions' not in st.session_state:
-        st.session_state.interview_questions = ""
 
     with st.form(key='interview_form'):
         job_description = handle_job_description_input()
@@ -269,14 +265,14 @@ def handle_interview_question_generation():
         else:
             try:
                 cv_content = read_file(cv_file)
-                st.session_state.interview_questions = generate_interview_questions(job_description, cv_content)
-                st.markdown(f"<div class='card'><h3>Generated Interview Questions:</h3>{st.session_state.interview_questions}</div>", unsafe_allow_html=True)
+                interview_questions = generate_interview_questions(job_description, cv_content)
+                st.markdown(f"<div class='card'><h3>Generated Interview Questions:</h3><p>{interview_questions}</p></div>", unsafe_allow_html=True)
                 
                 # Download button for the interview questions
-                if st.button("Download Interview Questions as PDF"):
-                    pdf = create_pdf(st.session_state.interview_questions, "Interview Questions")
+                if st.button("Download as PDF"):
+                    pdf = create_pdf(interview_questions, "Interview Questions")
                     st.download_button(
-                        label="Click here to download",
+                        label="Download as PDF",
                         data=pdf,
                         file_name="interview_questions.pdf",
                         mime="application/pdf"
@@ -284,15 +280,9 @@ def handle_interview_question_generation():
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
 
-    # Display previously generated interview questions
-    if st.session_state.interview_questions:
-        st.markdown(f"<div class='card'><h3>Previously Generated Interview Questions:</h3>{st.session_state.interview_questions}</div>", unsafe_allow_html=True)
-
 def handle_custom_question():
     """Handles the custom question answering process."""
     st.markdown("<h1>Generate Answers to Custom Questions</h1>", unsafe_allow_html=True)
-    if 'custom_answer' not in st.session_state:
-        st.session_state.custom_answer = ""
 
     with st.form(key='custom_question_form'):
         cv_file = st.file_uploader("Upload Your CV (PDF or DOCX)", type=['pdf', 'docx'])
@@ -306,15 +296,10 @@ def handle_custom_question():
         else:
             try:
                 cv_content = read_file(cv_file)
-                st.session_state.custom_answer = answer_custom_question(cv_content, job_description, custom_question)
-                st.markdown(f"<div class='card'><h3>Answer to Custom Question:</h3>{st.session_state.custom_answer}</div>", unsafe_allow_html=True)
+                custom_answer = answer_custom_question(cv_content, job_description, custom_question)
+                st.markdown(f"<div class='card'><h3>Answer to Custom Question:</h3><p>{custom_answer}</p></div>", unsafe_allow_html=True)
             except Exception as e:
                 st.error(f"An error occurred: {str(e)}")
-
-    # Display previously generated custom answer
-    if st.session_state.custom_answer:
-        st.markdown(f"<div class='card'><h3>Previous Answer:</h3>{st.session_state.custom_answer}</div>", unsafe_allow_html=True)
-
 
 def read_file(file):
     """Reads content from PDF, DOCX, or TXT file."""
@@ -379,7 +364,7 @@ def generate_cover_letter(job_description, cv_content):
                 {"role": "system", "content": "You are an expert in resume writing and job applications."},
                 {"role": "user", "content": prompt}
             ],
-            model="llama3-8b-8192",
+            model="mixtral-8x7b-32768",
             temperature=0.6,
             max_tokens=1000
         )
@@ -408,7 +393,7 @@ def generate_interview_questions(job_description, cv_content):
                 {"role": "system", "content": "You are an expert in conducting job interviews."},
                 {"role": "user", "content": prompt}
             ],
-            model="llama3-8b-8192",
+            model="mixtral-8x7b-32768",
             temperature=0.7,
             max_tokens=500
         )
@@ -440,7 +425,7 @@ def answer_custom_question(cv_content, job_description, custom_question):
                 {"role": "system", "content": "You are an expert career advisor with deep knowledge of various industries and job roles."},
                 {"role": "user", "content": prompt}
             ],
-            model="llama3-8b-8192",
+            model="mixtral-8x7b-32768",
             temperature=0.7,
             max_tokens=500
         )
