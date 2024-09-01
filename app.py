@@ -315,7 +315,7 @@ def handle_custom_question():
     if st.session_state.custom_answer:
         st.markdown(f"<div class='card'><h3>Previous Answer:</h3>{st.session_state.custom_answer}</div>", unsafe_allow_html=True)
 
-# ... (rest of the functions remain the same)
+
 def read_file(file):
     """Reads content from PDF, DOCX, or TXT file."""
     if file.type == "application/pdf":
