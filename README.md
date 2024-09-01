@@ -64,12 +64,12 @@ streamlit run app.py
 3. **Download Options**:
    - You can download the generated cover letter or interview questions as a **PDF**.
 
-## Demo
+## 👀 Demo
 
 ### Personalized Cover Letter Generation:
-(Cover Letter)[assets/cover_letter.png]
+![Cover Letter](assets/cover_letter.png)
 ### Interview Questions Generation:
-(Interview Questions)[assets/interview_questions.png]
+![Interview Questions](assets/interview_questions.png)
 
 ## ✨ Contributions and Future Updates
 
