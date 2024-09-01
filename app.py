@@ -379,8 +379,8 @@ def generate_cover_letter(job_description, cv_content):
                 {"role": "system", "content": "You are an expert in resume writing and job applications."},
                 {"role": "user", "content": prompt}
             ],
-            model="mixtral-8x7b-32768",
-            temperature=0.5,
+            model="llama3-8b-8192",
+            temperature=0.6,
             max_tokens=1000
         )
         
@@ -408,7 +408,7 @@ def generate_interview_questions(job_description, cv_content):
                 {"role": "system", "content": "You are an expert in conducting job interviews."},
                 {"role": "user", "content": prompt}
             ],
-            model="mixtral-8x7b-32768",
+            model="llama3-8b-8192",
             temperature=0.7,
             max_tokens=500
         )
@@ -440,7 +440,8 @@ def answer_custom_question(cv_content, job_description, custom_question):
                 {"role": "system", "content": "You are an expert career advisor with deep knowledge of various industries and job roles."},
                 {"role": "user", "content": prompt}
             ],
-            model="mixtral-8x7b-32768",
+            model="llama3-8b-8192"
+",
             temperature=0.7,
             max_tokens=500
         )
